@@ -22,10 +22,11 @@ type ApplicationContext struct {
 
 func NewApp(ctx context.Context, cfg Config) (*ApplicationContext, error) {
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.Mongo.Uri))
-	db := client.Database(cfg.Mongo.Database)
 	if err != nil {
 		return nil, err
 	}
+	db := client.Database(cfg.Mongo.Database)
+
 	fileType := reader.DelimiterType
 	filename := ""
 	if fileType == reader.DelimiterType {
@@ -54,7 +55,7 @@ func NewApp(ctx context.Context, cfg Config) (*ApplicationContext, error) {
 		return nil, err
 	}
 	errorHandler := importer.NewErrorHandler[*User](log.ErrorFields, "fileName", "lineNo", mp)
-	writer := w.NewMongoWriter[*User](db, "userimport")
+	writer := w.NewWriter[*User](db, "userimport")
 	importer := importer.NewImporter[User](reader.Read, transformer.Transform, validator.Validate, errorHandler.HandleError, errorHandler.HandleException, filename, writer.Write)
 	return &ApplicationContext{Import: importer.Import}, nil
 }
