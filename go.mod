@@ -1,12 +1,14 @@
 module go-service
 
-go 1.18
+go 1.22
+
+toolchain go1.22.4
 
 require (
 	github.com/core-go/config v1.0.1
 	github.com/core-go/io v1.0.0
 	github.com/core-go/log v0.1.2
-	github.com/core-go/mongo v0.5.5
+	github.com/core-go/mongo v0.5.11
 	go.mongodb.org/mongo-driver v1.15.1
 )
 
