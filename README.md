@@ -15,6 +15,7 @@
 ![Hexagonal Architecture](https://cdn-images-1.medium.com/max/800/1*nMu5_jZJ1omzIB5VK5Lh-w.png)
 
 #### Based on the flow, there are 4 main components (4 main ports):
+- Reader, Validator, Transformer, Writer
 ##### Reader
 Reader Adapter Sample: File Reader. We provide 2 file reader adapters:
 - Delimiter (CSV format) File Reader
