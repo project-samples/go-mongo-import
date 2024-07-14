@@ -1,10 +1,7 @@
 package app
 
-import "github.com/core-go/log"
-
 type Config struct {
 	Mongo MongoConfig `mapstructure:"mongo"`
-	Log   log.Config  `mapstructure:"log"`
 }
 
 type MongoConfig struct {

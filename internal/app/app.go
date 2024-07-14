@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
 	"time"
 
@@ -12,7 +13,6 @@ import (
 	"github.com/core-go/io/reader"
 	"github.com/core-go/io/transform"
 	v "github.com/core-go/io/validator"
-	"github.com/core-go/log"
 	w "github.com/core-go/mongo/batch"
 )
 
@@ -54,7 +54,7 @@ func NewApp(ctx context.Context, cfg Config) (*ApplicationContext, error) {
 	if err != nil {
 		return nil, err
 	}
-	errorHandler := importer.NewErrorHandler[*User](log.ErrorFields, "fileName", "lineNo", mp)
+	errorHandler := importer.NewErrorHandler[*User](Log, "fileName", "lineNo", mp)
 	writer := w.NewStreamWriter[*User](db, "userimport", 6)
 	importer := importer.NewImporter[User](reader.Read, transformer.Transform, validator.Validate, errorHandler.HandleError, errorHandler.HandleException, filename, writer.Write, writer.Flush)
 	return &ApplicationContext{Import: importer.Import}, nil
@@ -68,4 +68,8 @@ type User struct {
 	Status      bool       `json:"status" gorm:"column:status" true:"1" false:"0" bson:"status" dynamodbav:"status" format:"%5s" length:"5" firestore:"status"`
 	CreatedDate *time.Time `json:"createdDate" gorm:"column:createdDate" bson:"createdDate" length:"10" format:"dateFormat:2006-01-02" dynamodbav:"createdDate" firestore:"createdDate" validate:"required"`
 	Test        string     `json:"test" gorm:"-" bson:"-" dynamodbav:"-" firestore:"-" length:"0" format:"-"`
+}
+
+func Log(ctx context.Context, msg string, fields map[string]interface{}) {
+	fmt.Println(msg)
 }
