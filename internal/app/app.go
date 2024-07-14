@@ -13,7 +13,7 @@ import (
 	"github.com/core-go/io/transform"
 	v "github.com/core-go/io/validator"
 	"github.com/core-go/log"
-	w "github.com/core-go/mongo/writer"
+	w "github.com/core-go/mongo/batch"
 )
 
 type ApplicationContext struct {
@@ -55,8 +55,8 @@ func NewApp(ctx context.Context, cfg Config) (*ApplicationContext, error) {
 		return nil, err
 	}
 	errorHandler := importer.NewErrorHandler[*User](log.ErrorFields, "fileName", "lineNo", mp)
-	writer := w.NewWriter[*User](db, "userimport")
-	importer := importer.NewImporter[User](reader.Read, transformer.Transform, validator.Validate, errorHandler.HandleError, errorHandler.HandleException, filename, writer.Write)
+	writer := w.NewStreamWriter[*User](db, "userimport", 6)
+	importer := importer.NewImporter[User](reader.Read, transformer.Transform, validator.Validate, errorHandler.HandleError, errorHandler.HandleException, filename, writer.Write, writer.Flush)
 	return &ApplicationContext{Import: importer.Import}, nil
 }
 
