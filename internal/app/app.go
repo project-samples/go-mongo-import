@@ -8,9 +8,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/core-go/io/importer"
-	"github.com/core-go/io/reader"
-	"github.com/core-go/io/transform"
+	im "github.com/core-go/io/importer"
+	rd "github.com/core-go/io/reader"
 	v "github.com/core-go/io/validator"
 	"github.com/core-go/log"
 	w "github.com/core-go/mongo/batch"
@@ -27,9 +26,9 @@ func NewApp(ctx context.Context, cfg Config) (*ApplicationContext, error) {
 	}
 	db := client.Database(cfg.Mongo.Database)
 
-	fileType := reader.DelimiterType
+	fileType := rd.DelimiterType
 	filename := ""
-	if fileType == reader.DelimiterType {
+	if fileType == rd.DelimiterType {
 		filename = "delimiter.csv"
 	} else {
 		filename = "fixedlength.csv"
@@ -38,7 +37,7 @@ func NewApp(ctx context.Context, cfg Config) (*ApplicationContext, error) {
 		fullPath := filepath.Join("data", filename)
 		return fullPath
 	}
-	reader, err := reader.NewDelimiterFileReader(generateFileName)
+	reader, err := rd.NewFileReader(generateFileName)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +45,7 @@ func NewApp(ctx context.Context, cfg Config) (*ApplicationContext, error) {
 		"app": "import users",
 		"env": "dev",
 	}
-	transformer, err := transform.NewDelimiterTransformer[User](",")
+	transformer, err := rd.NewDelimiterTransformer[User](",")
 	if err != nil {
 		return nil, err
 	}
@@ -54,9 +53,9 @@ func NewApp(ctx context.Context, cfg Config) (*ApplicationContext, error) {
 	if err != nil {
 		return nil, err
 	}
-	errorHandler := importer.NewErrorHandler[*User](log.ErrorFields, "fileName", "lineNo", mp)
+	errorHandler := im.NewErrorHandler[*User, string](log.ErrorFields, "fileName", "lineNo", mp)
 	writer := w.NewStreamWriter[*User](db, "userimport", 6)
-	importer := importer.NewImporter[User](reader.Read, transformer.Transform, validator.Validate, errorHandler.HandleError, errorHandler.HandleException, filename, writer.Write, writer.Flush)
+	importer := im.NewImporter[User](reader.Read, transformer.Transform, validator.Validate, errorHandler.HandleError, errorHandler.HandleException, filename, writer.Write, writer.Flush)
 	return &ApplicationContext{Import: importer.Import}, nil
 }
 
